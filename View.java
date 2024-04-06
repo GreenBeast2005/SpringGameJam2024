@@ -49,7 +49,7 @@ public class View extends JPanel
 
 	public void handleScrolling()
 	{
-		scrollPosY = model.getPacmanCenterYPosition() - (Game.GAME_WINDOW_SIZE_Y / 2);
+		scrollPosY = model.getPlayerCenterYPosition() - (Game.GAME_WINDOW_SIZE_Y / 2);
 		if(scrollPosY > Game.GAME_WORLD_SIZE_Y - Game.GAME_WINDOW_SIZE_Y)
 			scrollPosY = Game.GAME_WORLD_SIZE_Y - Game.GAME_WINDOW_SIZE_Y;
 		if(scrollPosY < 0)
@@ -71,7 +71,7 @@ public class View extends JPanel
 			g.setColor(new Color(0, 0, 100));
 		}else
 		{
-			g.setColor(new Color(0, 0, 0));
+			g.setColor(new Color(0, 150, 0));
 		}
 		g.fillRect(0, 0, this.getWidth(), this.getHeight());
 
@@ -83,6 +83,25 @@ public class View extends JPanel
 			temp.draw(g, scrollPosY);
 		}
 
+		for(int i = 0; i < Model.GetToolBelt().size(); i++)
+		{
+			if(i == Model.GetSelectedToolNumber())
+			{
+				g.setColor(new Color(0, 255, 0));
+				g.fillRect(195 + (i * 115), 800, 110, 110);
+
+				if(Model.GetToolBelt().get(i).isBag())
+				{
+					((Bag)Model.GetToolBelt().get(i)).drawItems(g);
+				}
+			}
+			Model.GetToolBelt().get(i).drawYourself(g, 200 + (i * 110), 800);
+
+		}
+
+		g.setColor(new Color(255, 0, 0));
+		g.drawRect(Grid.CONVERT_CORD_TO_GRID(model.getPlayerSprite().getInteractXSpot()), Grid.CONVERT_CORD_TO_GRID(model.getPlayerSprite().getInteractYSpot()) - scrollPosY, Grid.GRID_SIZE, Grid.GRID_SIZE);
+
 		//Checks again if you are in edit mode, its at the bottom because I want the text to render on top of everything else
 		if(Controller.GetEditMode()) 
 		{
@@ -92,11 +111,8 @@ public class View extends JPanel
 			//Adds a second piece of text that displays if you are in add wall mode or remove mode
 			switch(Controller.GetSpecificEditMode())
 			{
-				case addWall: g.drawString("Adding Walls", this.getWidth() - 110, this.getHeight() - 15); break;
-				case removeWall: g.drawString("Removing Walls", this.getWidth() - 110, this.getHeight() - 15); break;
-				case addPellet: g.drawString("Adding Pellets", this.getWidth() - 110, this.getHeight() - 15); break;
-				case addGhost: g.drawString("Adding Ghosts", this.getWidth() - 110, this.getHeight() - 15); break;
-				case addFruit: g.drawString("Adding Fruits", this.getWidth() - 110, this.getHeight() - 15); break;
+				case addCrop: g.drawString("Adding Crops", this.getWidth() - 110, this.getHeight() - 15); break;
+				case addDayCycleInteractable: g.drawString("Adding Day Cycle", this.getWidth() - 110, this.getHeight() - 15); break;
 			}
 		}
 	}

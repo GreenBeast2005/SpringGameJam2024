@@ -23,6 +23,8 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 	private boolean moveRight;
 	private boolean moveLeft;
 
+	private boolean isShift;
+
 	//I made these bad boys static so that I can reference them in view without an instance of controller to alter the view
 	private static boolean editMode;
 	private static SpecificEditMode specificEditMode;
@@ -30,11 +32,8 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 	//Since this is a data type used by controller and view I figured making it public statatic is fine
 	public static enum SpecificEditMode
 	{
-		addWall,
-		removeWall,
-		addPellet,
-		addGhost,
-		addFruit
+		addCrop,
+		addDayCycleInteractable,
 	}
 
 	//Constructor
@@ -42,23 +41,30 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 	{
 		model = m;
 		editMode = false;
-		specificEditMode = SpecificEditMode.addWall;
+		specificEditMode = SpecificEditMode.addCrop;
+		isShift = false;
 	}
 
 	//Update function that basically is just in charge of calling model for relevent input.
 	public void update() 
 	{ 
-		if(moveUp) {
-			model.recieveUpInput();
-		}else if(moveDown) {
-			model.recieveDownInput();
-		}else if(moveLeft) {
-			model.recieveLeftInput();
-		}else if(moveRight) {
-			model.recieveRightInput();
+		if(!isShift)
+		{
+			if(moveUp) {
+				model.recieveUpInput();
+			}else if(moveDown) {
+				model.recieveDownInput();
+			}else if(moveLeft) {
+				model.recieveLeftInput();
+			}else if(moveRight) {
+				model.recieveRightInput();
+			}else{
+				model.recieveNoInput();
+			}
 		}else{
 			model.recieveNoInput();
 		}
+		
 	}
 
 	void setView(View v)
@@ -75,11 +81,9 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 			//It toggles you into remove wall mode automatically
 			switch(specificEditMode)
 			{
-				case addWall: model.createWallOnGrid(e.getX(), e.getY(), view.getScrollPosY()); break;
-				case removeWall: model.removeWallOnGrid(e.getX(), e.getY(), view.getScrollPosY()); break;
-				case addPellet: model.createPelletOnGrid(e.getX(), e.getY(), view.getScrollPosY()); break;
-				case addGhost: model.createGenericSprite(new Ghost(e.getX(), e.getY()), view.getScrollPosY()); break;
-				case addFruit: model.createGenericSprite(new Fruit(e.getX(), e.getY()), view.getScrollPosY()); break;
+				case addCrop: model.createSpriteOnGrid(e.getX(), e.getY(), view.getScrollPosY(), new Wheat(0, 0)); break;
+				case addDayCycleInteractable: model.createSpriteOnGrid(e.getX(), e.getY(), view.getScrollPosY(), new DayCycleTrigger(0, 0)); break;
+
 			}
 		}
 	}
@@ -93,16 +97,7 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 	//Allows you to "Draw" walls or erase lots of walls at once
 	public void mouseDragged(MouseEvent e)
 	{
-		if(editMode)
-		{
-			switch(specificEditMode)
-			{
-				case addWall: model.createWallOnGrid(e.getX(), e.getY(), view.getScrollPosY()); break;
-				case removeWall: model.removeWallOnGrid(e.getX(), e.getY(), view.getScrollPosY()); break;
-				case addPellet: model.createPelletOnGrid(e.getX(), e.getY(), view.getScrollPosY()); break;
-				default: break;
-			}
-		}
+		
 	}
 
 	public void mouseMoved(MouseEvent e) { }
@@ -119,6 +114,11 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 			case KeyEvent.VK_DOWN: moveDown = true; break;
 			case KeyEvent.VK_LEFT: moveLeft = true; break;
 			case KeyEvent.VK_RIGHT: moveRight = true; break;
+			
+			case KeyEvent.VK_SHIFT:
+				if(Model.GetToolBelt().get(Model.GetSelectedToolNumber()).isBag()) 
+					isShift = true; 
+				break;
 		}
 		char keyPressed = Character.toLowerCase(e.getKeyChar());
 		if(keyPressed == 'q')
@@ -132,11 +132,35 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 	{
 		switch(e.getKeyCode())
 		{
-			case KeyEvent.VK_UP: moveUp = false; break;
-			case KeyEvent.VK_DOWN: moveDown = false; break;
+			case KeyEvent.VK_UP: 
+				if(isShift)
+					((Bag)Model.GetToolBelt().get(Model.GetSelectedToolNumber())).itemHighlightedUp();
+				moveUp = false; break;
+			case KeyEvent.VK_DOWN:
+				if(isShift)
+					((Bag)Model.GetToolBelt().get(Model.GetSelectedToolNumber())).itemHighlightedDown();
+			 	moveDown = false; break;
 			case KeyEvent.VK_LEFT: moveLeft = false; break;
 			case KeyEvent.VK_RIGHT: moveRight = false; break;
-		}
+
+			case KeyEvent.VK_ENTER: 
+				if(Model.GetToolBelt().get(Model.GetSelectedToolNumber()).isHoe())
+				{
+					model.handleCreateFarmland(view.getScrollPosY());
+				}else if(Model.GetToolBelt().get(Model.GetSelectedToolNumber()).isWateringCan()){
+					model.handleWateringInteraction();
+				}else if(Model.GetToolBelt().get(Model.GetSelectedToolNumber()).isHand()){
+					model.handleCheckingInteraction();
+				}
+				break;
+			
+			case KeyEvent.VK_SHIFT: isShift = false; break;
+
+			case KeyEvent.VK_1: model.selectTool(0); break;
+			case KeyEvent.VK_2: model.selectTool(1); break;
+			case KeyEvent.VK_3: model.selectTool(2); break;
+			case KeyEvent.VK_4: model.selectTool(3); break;
+		} 
 		char keyPressed = Character.toLowerCase(e.getKeyChar());
 		switch(keyPressed)
 		{
@@ -144,31 +168,13 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 			case 'a':
 				if(editMode)
 				{
-					specificEditMode = SpecificEditMode.addWall;
+					specificEditMode = SpecificEditMode.addCrop;
 				}
 				break;
 			case 'r':
 				if(editMode)
 				{
-					specificEditMode = SpecificEditMode.removeWall;
-				}
-				break;
-			case 'p':
-				if(editMode)
-				{
-					specificEditMode = SpecificEditMode.addPellet;
-				}
-				break;
-			case 'g':
-				if(editMode)
-				{
-					specificEditMode = SpecificEditMode.addGhost;
-				}
-				break;
-			case 'f':
-				if(editMode)
-				{
-					specificEditMode = SpecificEditMode.addFruit;
+					specificEditMode = SpecificEditMode.addDayCycleInteractable;
 				}
 				break;
 			case 'c': 
@@ -178,25 +184,25 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 					System.out.println("Removed all sprites!");
 				}
 				break;
-			case 's':
-				Json saveOb = model.marshal();
-				saveOb.save("map.json");
-				System.out.println("Saving Level!");
-				break;
-			case 'l':
-				Json loadOb = null;
-				try 
-				{
-					loadOb = Json.load("map.json");
-					System.out.println("Loading Level!");
-				}catch (RuntimeException error) {
-					error.printStackTrace(System.err);
-					System.out.println("Unable to load level file :(");
-					System.exit(1);
-				}
+			// case 's':
+			// 	Json saveOb = model.marshal();
+			// 	saveOb.save("map.json");
+			// 	System.out.println("Saving Level!");
+			// 	break;
+			// case 'l':
+			// 	Json loadOb = null;
+			// 	try 
+			// 	{
+			// 		loadOb = Json.load("map.json");
+			// 		System.out.println("Loading Level!");
+			// 	}catch (RuntimeException error) {
+			// 		error.printStackTrace(System.err);
+			// 		System.out.println("Unable to load level file :(");
+			// 		System.exit(1);
+			// 	}
 				
-				model.unMarshal(loadOb);
-				break;
+			// 	model.unMarshal(loadOb);
+			// 	break;
 		}
 	}
 

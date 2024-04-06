@@ -1,6 +1,6 @@
 cls
 @echo off
-javac Game.java View.java Controller.java Model.java Json.java Wall.java Pacman.java Ghost.java Pellet.java Fruit.java Sprite.java
+javac Game.java View.java Controller.java Model.java Json.java Sprite.java Grid.java Crop.java Tool.java Interactable.java Bag.java
 
 if %errorlevel% neq 0 (
 	echo There was an error; exiting now.	

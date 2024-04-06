@@ -16,24 +16,24 @@ public class Game extends JFrame
 	private Controller controller;
 	private View view;
 
-	public static final int GAME_WINDOW_SIZE_X = 700;
-	public static final int GAME_WINDOW_SIZE_Y = 700;
-	public static final int GAME_WORLD_SIZE_X = 700;
-	public static final int GAME_WORLD_SIZE_Y = 1400;
+	public static final int GAME_WINDOW_SIZE_X = 1000;
+	public static final int GAME_WINDOW_SIZE_Y = 1000;
+	public static final int GAME_WORLD_SIZE_X = 2000;
+	public static final int GAME_WORLD_SIZE_Y = 2000;
 
 	public Game()
 	{
 		//Initializes the model, controller, view so that they can be 
-		Json firstLevelOb = null;
-		try {
-			firstLevelOb = Json.load("map.json");
-		} catch (Exception e) {
-			e.printStackTrace(System.err);
-			System.out.println("Unable to load the map");
-			System.exit(1);
-		}
+		// Json firstLevelOb = null;
+		// try {
+		// 	firstLevelOb = Json.load("map.json");
+		// } catch (Exception e) {
+		// 	e.printStackTrace(System.err);
+		// 	System.out.println("Unable to load the map");
+		// 	System.exit(1);
+		// }
 		
-		model = new Model(firstLevelOb);
+		model = new Model();
 
 		controller = new Controller(model);
 		view = new View(controller, model);
@@ -45,7 +45,7 @@ public class Game extends JFrame
 		this.addKeyListener(controller);
 
 		//These are just some of the generic setup for the Window
-		this.setTitle("Assignment 5 Stage 1 Pacman!");
+		this.setTitle("Gardening Game Fun");
 		
 		//I changed the set size method to this, because the setsize method includes the window border and I want control of the size of the content pane
 		view.setPreferredSize(new Dimension(GAME_WINDOW_SIZE_X, GAME_WINDOW_SIZE_Y)); 

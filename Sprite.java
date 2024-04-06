@@ -25,9 +25,11 @@ public abstract class Sprite {
 
     public abstract void draw(Graphics g, int scrollPosY);
 
-    public abstract Json marshal();
+    //public abstract Json marshal();
 
     public abstract void handleCollision(Sprite collidingSprite);
+    public abstract void water();
+    public abstract void passTime();
 
     public boolean shouldBeDestroyed()
     {
@@ -43,19 +45,23 @@ public abstract class Sprite {
     {
         return false;
     }
-    public boolean isPacman()
+    public boolean isCrop()
     {
         return false;
     }
-    public boolean isGhost()
+    public boolean isTool()
     {
         return false;
     }
-    public boolean isPellet()
+    public boolean isPlayer()
     {
         return false;
     }
-    public boolean isFruit()
+    public boolean isInteractable()
+    {
+        return false;
+    }
+    public boolean isFarmLand()
     {
         return false;
     }

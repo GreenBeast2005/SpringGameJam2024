@@ -6,16 +6,17 @@ Description: 	This is the pacman class for our basic pacman game
 ******************************************************************/
 
 import java.awt.image.BufferedImage;
+import java.awt.Color;
 import java.awt.Graphics;
 
-public class Pacman extends Sprite {
+public class Player extends Sprite {
     private int preX, preY;
     private int speed;
 
     private final int PACMAN_IMAGES_PER_DIRECTION = 3;
 	private final int PACMAN_NUMBER_OF_DIRECTIONS = 4;
     private int currentFrame;
-    private static BufferedImage pacmanImages[][];
+    //private static BufferedImage pacmanImages[][];
 
     private boolean isMoving;
     private Direction direction;
@@ -29,7 +30,7 @@ public class Pacman extends Sprite {
         down
     }
 
-    public Pacman(int x, int y, int h, int w)
+    public Player(int x, int y, int h, int w)
     {
         super(x, y, h, w);
         preX = x;
@@ -37,59 +38,60 @@ public class Pacman extends Sprite {
         direction = Direction.down;
         currentFrame = 0;
 
-        speed = 5;
+        speed = 15;
 
         hasCollisionHandling = true;
 
-        if(pacmanImages == null)
-        {
-            pacmanImages = new BufferedImage[PACMAN_NUMBER_OF_DIRECTIONS][PACMAN_IMAGES_PER_DIRECTION];
-            for(int i = 0; i < PACMAN_NUMBER_OF_DIRECTIONS; i++)
-            {
-                for(int j = 0; j < PACMAN_IMAGES_PER_DIRECTION; j++)
-                {
-                    pacmanImages[i][j] = View.LOAD_IMAGE("Images\\pacman" + i + j + ".png");
-                    System.out.println("Loaded Pacman Image"+i+j);
-                }
-            }
-        }
+        // if(pacmanImages == null)
+        // {
+        //     pacmanImages = new BufferedImage[PACMAN_NUMBER_OF_DIRECTIONS][PACMAN_IMAGES_PER_DIRECTION];
+        //     for(int i = 0; i < PACMAN_NUMBER_OF_DIRECTIONS; i++)
+        //     {
+        //         for(int j = 0; j < PACMAN_IMAGES_PER_DIRECTION; j++)
+        //         {
+        //             pacmanImages[i][j] = View.LOAD_IMAGE("Images\\pacman" + i + j + ".png");
+        //             System.out.println("Loaded Pacman Image"+i+j);
+        //         }
+        //     }
+        // }
     }
 
     //Constructor based on json object
-    public Pacman(Json ob)
-  	{
-        this((int)ob.getLong("x"), (int)ob.getLong("y"), (int)ob.getLong("h"), (int)ob.getLong("w"));
-    }
+    // public Pacman(Json ob)
+  	// {
+    //     this((int)ob.getLong("x"), (int)ob.getLong("y"), (int)ob.getLong("h"), (int)ob.getLong("w"));
+    // }
 
-    // Marshals this object into a JSON DOM
-    @Override
-    public Json marshal()
-    {
-        Json ob = Json.newObject();
-        ob.add("x", x);
-        ob.add("y", y);
-     	ob.add("h", h);
-        ob.add("w", w);
-        return ob;
-    }
+    // // Marshals this object into a JSON DOM
+    // @Override
+    // public Json marshal()
+    // {
+    //     Json ob = Json.newObject();
+    //     ob.add("x", x);
+    //     ob.add("y", y);
+    //  	ob.add("h", h);
+    //     ob.add("w", w);
+    //     return ob;
+    // }
 
     //Gets called inside model.update currently does nothing, but has potential to do something later
     @Override
     public void update() { }
 
-    public void setPosition(int x, int y, int h, int w)
+    public void setPosition(int x, int y)
     {
         this.x = x;
         this.y = y;
-        this.h = h;
-        this.w = w;
+        this.h = 50;
+        this.w = 50;
     }
 
     @Override
     public void draw(Graphics g, int scrollPosY)
     {
         //Example of using the direction enum, when you do .ordinal it gives the position of the direction in the enum
-        g.drawImage(pacmanImages[direction.ordinal()][currentFrame/2], x, y - scrollPosY, w, h, null);
+        g.setColor(new Color(255, 20, 20));
+        g.fillRect(x, y - scrollPosY, w, h);
         if(isMoving)
 		{
 			updateFrame();
@@ -124,6 +126,31 @@ public class Pacman extends Sprite {
     public int getCenterYPosition()
     {
         return y + (h / 2);
+    }
+    
+    public int getInteractXSpot()
+    {
+        int tempX = x + (w/2);
+        switch(direction)
+        {
+            case up: break;
+            case down: break;
+            case left: tempX -= w; break;
+            case right: tempX += w; break;
+        }
+        return tempX;
+    }
+    public int getInteractYSpot()
+    {
+        int tempY = y + (h/2);
+        switch(direction)
+        {
+            case up: tempY -= h; break;
+            case down: tempY += h; break;
+            case left: break;
+            case right: break;
+        }
+        return tempY;
     }
 
     //Used to move pacman around
@@ -163,7 +190,13 @@ public class Pacman extends Sprite {
     }
 
     @Override
-    public boolean isPacman()
+    public void passTime() { }
+
+    @Override
+    public void water() { }
+
+    @Override
+    public boolean isPlayer()
     {
         return true;
     }
@@ -172,7 +205,7 @@ public class Pacman extends Sprite {
     @Override 
     public String toString()
     {
-        return "Pacman (x,y) = (" + x + ", " + y + "), w = " + w + ", h = " + h;
+        return "Player (x,y) = (" + x + ", " + y + "), w = " + w + ", h = " + h;
     }
 
     //This function takes the wall pacman is colliding with and then adjusts the position based on that.
