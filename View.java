@@ -20,6 +20,8 @@ public class View extends JPanel
 	private Model model;
 
 	private int scrollPosY;
+	private BufferedImage coins, backgroundImage;
+	public static BufferedImage signImage;
 
 	//Constructor, gives the view class a reference to the controller, and the model.
 	public View(Controller c, Model m)
@@ -27,6 +29,10 @@ public class View extends JPanel
 		model = m;
 
 		scrollPosY = 0;
+
+		coins = LOAD_IMAGE("Images\\playerImages\\coin.png");
+		backgroundImage = LOAD_IMAGE("Images\\cropImages\\backgroundImage.jpg");
+		signImage = LOAD_IMAGE("Images\\toolImages\\InfoSign.png");
 		
 		c.setView(this);
 	}
@@ -62,6 +68,8 @@ public class View extends JPanel
 		//This handles the logic of the camera moving around and stuff
 		handleScrolling();
 
+		
+
 		//Sets the font of the little edit mode text in the bottom right corner
 		g.setFont(new Font("Dialog", Font.PLAIN, 14));
 		
@@ -69,25 +77,33 @@ public class View extends JPanel
 		if(Controller.GetEditMode())
 		{
 			g.setColor(new Color(0, 0, 100));
+			g.fillRect(0, 0, this.getWidth(), this.getHeight()); 
 		}else
 		{
-			g.setColor(new Color(0, 150, 0));
+			//g.setColor(new Color(0, 150, 0));
+			g.drawImage(backgroundImage, 0, 0 - scrollPosY, Game.GAME_WINDOW_SIZE_X, Game.GAME_WINDOW_SIZE_Y / 2, null);
+			g.drawImage(backgroundImage, 0, Game.GAME_WINDOW_SIZE_Y/2 - scrollPosY, Game.GAME_WINDOW_SIZE_X, Game.GAME_WINDOW_SIZE_Y / 2, null);
+			g.drawImage(backgroundImage, 0, Game.GAME_WINDOW_SIZE_Y - scrollPosY, Game.GAME_WINDOW_SIZE_X, Game.GAME_WINDOW_SIZE_Y / 2, null);
+			g.drawImage(backgroundImage, 0, Game.GAME_WINDOW_SIZE_Y + Game.GAME_WINDOW_SIZE_Y/2 - scrollPosY, Game.GAME_WINDOW_SIZE_X, Game.GAME_WINDOW_SIZE_Y / 2, null);
 		}
-		g.fillRect(0, 0, this.getWidth(), this.getHeight());
+		
 
 		//Draws all the walls in the model class wall list
 		Iterator<Sprite> iter = model.getSpriteList().iterator();
 		while(iter.hasNext())
 		{
 			Sprite temp = iter.next();
-			temp.draw(g, scrollPosY);
+			if(!temp.isPlayer())
+				temp.draw(g, scrollPosY);
 		}
+
+		model.getSpriteList().get(0).draw(g, scrollPosY);
 
 		for(int i = 0; i < Model.GetToolBelt().size(); i++)
 		{
 			if(i == Model.GetSelectedToolNumber())
 			{
-				g.setColor(new Color(0, 255, 0));
+				g.setColor(new Color(0, 0, 0, 100));
 				g.fillRect(195 + (i * 115), 800, 110, 110);
 
 				if(Model.GetToolBelt().get(i).isBag())
@@ -101,6 +117,30 @@ public class View extends JPanel
 
 		g.setColor(new Color(255, 0, 0));
 		g.drawRect(Grid.CONVERT_CORD_TO_GRID(model.getPlayerSprite().getInteractXSpot()), Grid.CONVERT_CORD_TO_GRID(model.getPlayerSprite().getInteractYSpot()) - scrollPosY, Grid.GRID_SIZE, Grid.GRID_SIZE);
+
+
+		g.setColor(new Color(0, 0, 0));
+		g.setFont(new Font("Dialog", Font.BOLD, 40));
+		g.drawImage(signImage, 5, 5, 250, 50, null);
+		g.drawImage(coins, 10, -15, 100, 80, null);
+		g.drawString("" + Model.money, 105, 45);
+		
+
+		// if(model.getDayNightCycle())
+		// {
+		// 	for(int i = 1; i < 100; i++)
+		// 	{
+		// 		g.setColor(new Color(0,0,0, 1 - i/100));
+		// 		g.drawRect(0, 0, Game.GAME_WINDOW_SIZE_X, Game.GAME_WINDOW_SIZE_Y);
+		// 		try
+		// 		{
+		// 			Thread.sleep(20);
+		// 		} catch(Exception e) {
+		// 			e.printStackTrace();
+		// 			System.exit(1);
+		// 		}
+		// 	}
+		// }
 
 		//Checks again if you are in edit mode, its at the bottom because I want the text to render on top of everything else
 		if(Controller.GetEditMode()) 

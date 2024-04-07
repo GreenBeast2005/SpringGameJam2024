@@ -34,6 +34,9 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 	{
 		addCrop,
 		addDayCycleInteractable,
+		addSalesPerson,
+		addWall,
+		addFloor
 	}
 
 	//Constructor
@@ -81,9 +84,10 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 			//It toggles you into remove wall mode automatically
 			switch(specificEditMode)
 			{
-				case addCrop: model.createSpriteOnGrid(e.getX(), e.getY(), view.getScrollPosY(), new Wheat(0, 0)); break;
 				case addDayCycleInteractable: model.createSpriteOnGrid(e.getX(), e.getY(), view.getScrollPosY(), new DayCycleTrigger(0, 0)); break;
-
+				case addSalesPerson: model.createSpriteOnGrid(e.getX(), e.getY(), view.getScrollPosY(), new SellingInteractable(0, 0)); break;
+				case addWall: model.createSpriteOnGrid(e.getX(), e.getY(), view.getScrollPosY(), new Wall(0, 0)); break;
+				case addFloor: model.createSpriteOnGrid(e.getX(), e.getY(), view.getScrollPosY(), new Floor(0, 0)); break;
 			}
 		}
 	}
@@ -151,6 +155,8 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 					model.handleWateringInteraction();
 				}else if(Model.GetToolBelt().get(Model.GetSelectedToolNumber()).isHand()){
 					model.handleCheckingInteraction();
+				}else if(Model.GetToolBelt().get(Model.GetSelectedToolNumber()).isBag()){
+					model.handlePlantingInteraction();
 				}
 				break;
 			
@@ -177,6 +183,24 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 					specificEditMode = SpecificEditMode.addDayCycleInteractable;
 				}
 				break;
+			case 'n':
+				if(editMode)
+				{
+					specificEditMode = SpecificEditMode.addSalesPerson;
+				}
+				break;
+			case 'd':
+				if(editMode)
+				{
+					specificEditMode = SpecificEditMode.addWall;
+				}
+				break;
+			case 'f':
+				if(editMode)
+				{
+					specificEditMode = SpecificEditMode.addFloor;
+				}
+				break;
 			case 'c': 
 				if(editMode)
 				{
@@ -184,11 +208,11 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 					System.out.println("Removed all sprites!");
 				}
 				break;
-			// case 's':
-			// 	Json saveOb = model.marshal();
-			// 	saveOb.save("map.json");
-			// 	System.out.println("Saving Level!");
-			// 	break;
+			case 's':
+				Json saveOb = model.marshal();
+				saveOb.save("map.json");
+				System.out.println("Saving Level!");
+				break;
 			// case 'l':
 			// 	Json loadOb = null;
 			// 	try 

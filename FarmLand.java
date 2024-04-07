@@ -46,6 +46,22 @@ public class FarmLand extends Sprite{
         return false;
     }
 
+    public boolean isOccupied()
+    {
+        return occupied;
+    }
+
+    public void setOccupied(boolean b)
+    {
+        occupied = b;
+    }
+
+    @Override
+    public Json marshal()
+    {
+        return null;
+    }
+
     @Override
     public void update() { }
 

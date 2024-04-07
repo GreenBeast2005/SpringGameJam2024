@@ -30,6 +30,7 @@ public abstract class Sprite {
     public abstract void handleCollision(Sprite collidingSprite);
     public abstract void water();
     public abstract void passTime();
+    public abstract Json marshal();
 
     public boolean shouldBeDestroyed()
     {
@@ -41,10 +42,24 @@ public abstract class Sprite {
         return hasCollisionHandling;
     }
 
+    //These are the values that need to be known for saving and loading purposes.
     public boolean isWall()
     {
         return false;
     }
+    public boolean isSellingInteractable()
+    {
+        return false;
+    }
+    public boolean isDayCycleTrigger()
+    {
+        return false;
+    }
+    public boolean isFloor()
+    {
+        return false;
+    }
+
     public boolean isCrop()
     {
         return false;

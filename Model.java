@@ -9,7 +9,7 @@ import java.util.Iterator;
 
 public class Model
 {
-	private ArrayList<Sprite> sprites;
+	private ArrayList<Sprite> sprites, spritesBuffer;
 	
 	private static ArrayList<Tool> toolBelt;
 	private static int currentlySelectedToolNumber;
@@ -17,27 +17,32 @@ public class Model
 	//Gets called in the remove all sprites function, used by update to make sure there isnt any weirdness happening with listeners
 	private boolean spritesToBeCleared;
 
-	private static boolean DayNightCycleHasPassed;
+	private static boolean DayNightCycleHasPassed, DayNightCycle;
 
 	//Obselete kind of sort of
 	private Player player;
+	public static Bag bag;
+	public static int money;
 
 	//Default constructor
 	public Model()
 	{
 		sprites = new ArrayList<Sprite>();
+		spritesBuffer = new ArrayList<>();
+		bag = new Bag();
+
 		toolBelt = new ArrayList<Tool>();
 		toolBelt.add(new Hand());
 		toolBelt.add(new WateringCan());
 		toolBelt.add(new Hoe());
-		toolBelt.add(new Bag());
+		toolBelt.add(bag);
 
 		currentlySelectedToolNumber = 0;
 		
 		spritesToBeCleared = false;
 
 		//I call game world size to make sure player starts in the center of the world, also this puts a player in the sprites collection
-		player = new Player(Game.GAME_WORLD_SIZE_X/2 - 15, Game.GAME_WORLD_SIZE_Y/2 - 15, 30, 30);
+		player = new Player(Game.GAME_WORLD_SIZE_X/2 - 15, Game.GAME_WORLD_SIZE_Y/2 - 15, 100, 100);
 		sprites.add(player);
 	}
 
@@ -45,61 +50,64 @@ public class Model
 	public Model(Json ob)
   	{
 		this();
-        // unMarshal(ob);
+        unMarshal(ob);
     }
 
 	//Marshals this object into a JSON DOM
-    // public Json marshal()
-    // {
-    //     Json ob = Json.newObject();
-    //     Json wallList = Json.newList();
-	// 	Json pelletList = Json.newList();
-	// 	Json ghostList = Json.newList();
-	// 	Json fruitList = Json.newList();
-    //     for(int i = 0; i < sprites.size(); i++)
-	// 	{
-	// 		if(sprites.get(i).isWall())
-	// 		{
-    //         	wallList.add(sprites.get(i).marshal());
-	// 		}
-	// 		if(sprites.get(i).isPellet())
-	// 		{
-	// 			pelletList.add(sprites.get(i).marshal());
-	// 		}
-	// 		if(sprites.get(i).isGhost())
-	// 		{
-	// 			ghostList.add(sprites.get(i).marshal());
-	// 		}
-	// 		if(sprites.get(i).isFruit())
-	// 		{
-	// 			fruitList.add(sprites.get(i).marshal());
-	// 		}
-	// 	}
-	// 	ob.add("walls", wallList);
-	// 	ob.add("pellets", pelletList);
-	// 	ob.add("ghosts", ghostList);
-	// 	ob.add("fruits", fruitList);
-    //     return ob;
-    // }
+    public Json marshal()
+    {
+        Json ob = Json.newObject();
+        Json wallList = Json.newList();
+		Json sellingInteractableList = Json.newList();
+		Json dayCycleList = Json.newList();
+		Json floorList = Json.newList();
+        for(int i = 0; i < sprites.size(); i++)
+		{
+			if(sprites.get(i).isWall())
+			{
+            	wallList.add(sprites.get(i).marshal());
+			}
+			if(sprites.get(i).isSellingInteractable())
+			{
+				sellingInteractableList.add(sprites.get(i).marshal());
+			}
+			if(sprites.get(i).isDayCycleTrigger())
+			{
+				dayCycleList.add(sprites.get(i).marshal());
+			}
+			if(sprites.get(i).isFloor())
+			{
+				floorList.add(sprites.get(i).marshal());
+			}
+		}
+		ob.add("walls", wallList);
+		ob.add("buyers", sellingInteractableList);
+		ob.add("beds", dayCycleList);
+		ob.add("floors", floorList);
+
+        return ob;
+    }
 
 	//A set function that sets the model based on the Json object
-	// public void unMarshal(Json ob)
-	// {
-	// 	sprites = new ArrayList<Sprite>();
-	// 	sprites.add(player);
-    //     Json wallList = ob.get("walls");
-	// 	Json pelletList = ob.get("pellets");
-	// 	Json ghostList = ob.get("ghosts");
-	// 	Json fruitList = ob.get("fruits");
-    //     for(int i = 0; i < wallList.size(); i++)
-    //     	sprites.add(new Wall(wallList.get(i)));
-	// 	for(int i = 0; i < pelletList.size(); i++)
-    //     	sprites.add(new Pellet(pelletList.get(i)));
-	// 	for(int i = 0; i < ghostList.size(); i++)
-    //     	sprites.add(new Ghost(ghostList.get(i)));
-	// 	for(int i = 0; i < fruitList.size(); i++)
-    //     	sprites.add(new Fruit(fruitList.get(i)));
-    // }
+	public void unMarshal(Json ob)
+	{
+		sprites = new ArrayList<Sprite>();
+		sprites.add(player);
+        Json wallList = ob.get("walls");
+		Json sellingInteractableList = ob.get("buyers");
+		Json dayCycleList = ob.get("beds");
+		Json floorList = ob.get("floors");
+		
+		for(int i = 0; i < floorList.size(); i++)
+        	sprites.add(new Floor(floorList.get(i)));
+        for(int i = 0; i < wallList.size(); i++)
+        	sprites.add(new Wall(wallList.get(i)));
+		for(int i = 0; i < sellingInteractableList.size(); i++)
+        	sprites.add(new SellingInteractable(sellingInteractableList.get(i)));
+		for(int i = 0; i < dayCycleList.size(); i++)
+        	sprites.add(new DayCycleTrigger(dayCycleList.get(i)));
+		
+    }
 
 	//This update function is called in the main loop, doesnt do anything for this project, but I kept it anyway
 	public void update() 
@@ -114,6 +122,9 @@ public class Model
 			sprites.add(player);
 			spritesToBeCleared = false;
 		}
+
+		sprites.addAll(spritesBuffer);
+		spritesBuffer.clear();
 
 		//Goes through and updates sprites
 		//Goes through and handles warping
@@ -148,6 +159,9 @@ public class Model
 
 		if(DayNightCycleHasPassed)
 		{
+
+
+
 			Iterator<Sprite> growingSprites = sprites.iterator();
 			while(growingSprites.hasNext())
 			{
@@ -195,9 +209,24 @@ public class Model
 			if(checkingSprite.isInteractable() && isInteractingWithSprite(checkingSprite, player.getInteractXSpot(), player.getInteractYSpot()))
 			{
 				((Interactable)checkingSprite).interact();
+
+				if(checkingSprite.isCrop())
+				{
+					((Crop)checkingSprite).getLand().setOccupied(false);
+
+					if(((Crop)checkingSprite).isWheat())
+					{
+						bag.harvestCrop(Bag.ItemType.wheatSeed);
+					} 
+					else if(((Crop)checkingSprite).isRadish())
+					{
+						bag.harvestCrop(Bag.ItemType.radishSeed);
+					}
+				}
 			}
 		}
 	}
+
 	public void handleWateringInteraction()
 	{
 		Iterator<Sprite> checkingSprites = sprites.iterator();
@@ -210,6 +239,54 @@ public class Model
 			}
 		}
 	}
+
+	public void handlePlantingInteraction()
+	{
+		Iterator<Sprite> checkingSprites = sprites.iterator();
+		while(checkingSprites.hasNext())
+		{
+			Sprite checkingSprite = checkingSprites.next();
+			if(isInteractingWithSprite(checkingSprite, player.getInteractXSpot(), player.getInteractYSpot()) && checkingSprite.isFarmLand() && !((FarmLand)checkingSprite).isOccupied())
+			{
+				//Check for what seed is selected in bag remove one from the enum then place that and the x
+
+				Bag bag = (Bag)GetToolBelt().get(GetSelectedToolNumber());
+				((FarmLand)checkingSprite).plantSeed();
+
+				switch(bag.getHighlightedItem())
+				{
+					case wheatSeed:
+					{
+						bag.useSeed(Bag.ItemType.wheatSeed);
+						createSpriteOnGrid(player.getInteractXSpot(), player.getInteractYSpot(), 0, new Wheat(player.getInteractXSpot(), player.getInteractYSpot(), ((FarmLand)checkingSprite)));
+					} break;
+					case radishSeed:
+					{
+						bag.useSeed(Bag.ItemType.radishSeed);
+						createSpriteOnGrid(player.getInteractXSpot(), player.getInteractYSpot(), 0, new Radish(player.getInteractXSpot(), player.getInteractYSpot(), ((FarmLand)checkingSprite)));
+					} break;
+				}
+			}
+
+			if(isInteractingWithSprite(checkingSprite, player.getInteractXSpot(), player.getInteractYSpot()) && checkingSprite.isCrop())
+			{
+				Bag bag = ((Bag)GetToolBelt().get(GetSelectedToolNumber()));
+
+				switch(bag.getHighlightedItem())
+				{
+					case InstantGrow:
+					{
+						bag.useSeed(Bag.ItemType.InstantGrow);
+						((Crop)checkingSprite).instantGrown();
+					} break;
+					
+				}
+			}
+		}
+	}	
+
+
+
 	public void selectTool(int selectedTool)
 	{
 		if(selectedTool < toolBelt.size())
@@ -234,20 +311,32 @@ public class Model
 		spriteToBeMade.setX(x);
 		spriteToBeMade.setY(y);
 				
-		sprites.add(spriteToBeMade);
+		spritesBuffer.add(spriteToBeMade);
 	}
 	public void handleCreateFarmland(int scrollPosY)
 	{
 		int x = player.getInteractXSpot();
 		int y = player.getInteractYSpot();
+		boolean canFarm = true;
 
 		//These are here to make sure when you pass in the mouse x and y, their position is translated to be on the grid
 		x = Grid.CONVERT_CORD_TO_GRID(x);
 		y = Grid.CONVERT_CORD_TO_GRID(y);
 
-		Sprite spriteToBeMade = new FarmLand(x, y);
+		for(int i = 0; i < sprites.size(); i++)
+		{
+			if(isInteractingWithSprite(sprites.get(i), player.getInteractXSpot(), player.getInteractYSpot()))
+			{
+				canFarm = false;
+			}
+		}
+
+		if(canFarm)
+		{
+			Sprite spriteToBeMade = new FarmLand(x, y);
 				
-		sprites.add(spriteToBeMade);
+			spritesBuffer.add(spriteToBeMade);
+		}
 	}
 
 	
@@ -319,6 +408,17 @@ public class Model
 	public static void TriggerDayCycle()
 	{
 		DayNightCycleHasPassed = true;
+		DayNightCycle = true;
+	}
+
+	public boolean getDayNightCycle()
+	{
+		return DayNightCycle;
+	}
+
+	public void setDayNightCycle(boolean b)
+	{
+		DayNightCycle = b;
 	}
 
 	public ArrayList<Sprite> getSpriteList()

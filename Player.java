@@ -14,9 +14,9 @@ public class Player extends Sprite {
     private int speed;
 
     private final int PACMAN_IMAGES_PER_DIRECTION = 3;
-	private final int PACMAN_NUMBER_OF_DIRECTIONS = 4;
+
     private int currentFrame;
-    //private static BufferedImage pacmanImages[][];
+    private static BufferedImage playerImage;
 
     private boolean isMoving;
     private Direction direction;
@@ -24,10 +24,10 @@ public class Player extends Sprite {
     //Im using this to make it easier for humans to read the code rather than tying dirictions to numbers
     private enum Direction
     {
+        down,
         left,
         up,
-        right,
-        down
+        right
     }
 
     public Player(int x, int y, int h, int w)
@@ -42,18 +42,10 @@ public class Player extends Sprite {
 
         hasCollisionHandling = true;
 
-        // if(pacmanImages == null)
-        // {
-        //     pacmanImages = new BufferedImage[PACMAN_NUMBER_OF_DIRECTIONS][PACMAN_IMAGES_PER_DIRECTION];
-        //     for(int i = 0; i < PACMAN_NUMBER_OF_DIRECTIONS; i++)
-        //     {
-        //         for(int j = 0; j < PACMAN_IMAGES_PER_DIRECTION; j++)
-        //         {
-        //             pacmanImages[i][j] = View.LOAD_IMAGE("Images\\pacman" + i + j + ".png");
-        //             System.out.println("Loaded Pacman Image"+i+j);
-        //         }
-        //     }
-        // }
+        if(playerImage == null)
+        {
+            playerImage = View.LOAD_IMAGE("Images\\playerImages\\playerSprites.png");
+        }
     }
 
     //Constructor based on json object
@@ -91,7 +83,7 @@ public class Player extends Sprite {
     {
         //Example of using the direction enum, when you do .ordinal it gives the position of the direction in the enum
         g.setColor(new Color(255, 20, 20));
-        g.fillRect(x, y - scrollPosY, w, h);
+        g.drawImage(playerImage.getSubimage(0 + (currentFrame/2 * 100), 0 + (direction.ordinal() * 100), 100, 100), x, y - scrollPosY, w, h, null);
         if(isMoving)
 		{
 			updateFrame();
@@ -199,6 +191,12 @@ public class Player extends Sprite {
     public boolean isPlayer()
     {
         return true;
+    }
+
+    @Override
+    public Json marshal()
+    {
+        return null;
     }
 
     //Used for debuging, gives you all of pacmans relevent information

@@ -18,7 +18,7 @@ public class Game extends JFrame
 
 	public static final int GAME_WINDOW_SIZE_X = 1000;
 	public static final int GAME_WINDOW_SIZE_Y = 1000;
-	public static final int GAME_WORLD_SIZE_X = 2000;
+	public static final int GAME_WORLD_SIZE_X = 1000;
 	public static final int GAME_WORLD_SIZE_Y = 2000;
 
 	public Game()
@@ -33,7 +33,7 @@ public class Game extends JFrame
 		// 	System.exit(1);
 		// }
 		
-		model = new Model();
+		model = new Model(Json.load("map.json"));
 
 		controller = new Controller(model);
 		view = new View(controller, model);

@@ -12,7 +12,17 @@ public class DayCycleTrigger extends Sprite implements Interactable {
         dayCycleTriggerImage = (dayCycleTriggerImage == null) ? View.LOAD_IMAGE("Images\\bed.png") : dayCycleTriggerImage;
     }
 
+    public DayCycleTrigger(Json ob)
+    {
+        this((int)ob.getLong("x"), (int)ob.getLong("y"));
+    }
+
     public boolean isInteractable()
+    {
+        return true;
+    }
+
+    public boolean isDayCycleTrigger()
     {
         return true;
     }
@@ -40,5 +50,17 @@ public class DayCycleTrigger extends Sprite implements Interactable {
 
     @Override
     public void water() { }
+
+   // Marshals this object into a JSON DOM
+    @Override
+    public Json marshal()
+    {
+        Json ob = Json.newObject();
+        ob.add("x", x);
+        ob.add("y", y);
+        ob.add("h", h);
+        ob.add("w", w);
+        return ob;
+    }
     
 }

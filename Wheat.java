@@ -2,9 +2,9 @@ import java.awt.Graphics;
 
 public class Wheat extends Crop
 {
-    public Wheat(int x, int y)
+    public Wheat(int x, int y, FarmLand l)
     {
-        super(x,y, 4);
+        super(x,y, 4, l);
         h = Grid.GRID_SIZE;
         w = Grid.GRID_SIZE;
         growthStage = 0;
@@ -25,6 +25,12 @@ public class Wheat extends Crop
         {
             g.drawImage(whitheredImage, x, y - scr, w, h, null);
         }
+    }
+
+    @Override
+    public boolean isWheat()
+    {
+        return true;
     }
 
     @Override
